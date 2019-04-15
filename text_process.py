@@ -3,11 +3,16 @@ import pickle
 import os
 
 import jieba
+import jieba.analyse
+import jieba.posseg as psg
+
+
+
 from base import *
 
 __all__ = ['GroceryTextConverter']
 
-
+# print(jieba.analyse.extract_tags('请看图片中，一行代码没有修改，你是不是文件中"无法" 加了引号？？', 2))
 def _dict2list(d):
     if len(d) == 0:
         return []
@@ -21,22 +26,63 @@ def _dict2list(d):
 def _list2dict(l):
     return dict((v, k) for k, v in enumerate(l))
 
+def del_punc(t):
+    t = t.replace('，', '')
+    t = t.replace('。', '')
+    t = t.replace('？', '')
+    t = t.replace('！', '')
+    t = t.replace('：', '')
+    t = t.replace(';', '')
+    t = t.replace('"', '')
+    t = t.replace('\'', '')
+
+    t = t.replace('!', '')
+
+    t = t.replace('?', '')
+    t = t.replace('!', '')
+    return t
 
 class GroceryTextPreProcessor(object):
-    def __init__(self):
+    def __init__(self, stopwords_mode=False, keywords_mode=True, POS_mode=True):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
+        self.keywords_mode = keywords_mode
+        self.POS_mode = POS_mode
+        if stopwords_mode:
+            jieba.analyse.set_stop_words('stopwords.txt')
 
     @staticmethod
     def _default_tokenize(text):
         return jieba.cut(text.strip(), cut_all=True)
 
+    @staticmethod
+    def _default_get_keyword(text, topK=2):
+        return jieba.analyse.extract_tags(text, topK)
+
+    @staticmethod
+    def _default_POS(text):
+        return psg.cut(text.strip())
+
+
     def preprocess(self, text, custom_tokenize):
+        text = del_punc(text)  # 去除标点，和停用词区分开
+
         if custom_tokenize is not None:
             tokens = custom_tokenize(text)
         else:
-            tokens = self._default_tokenize(text)
+            if self.POS_mode:
+                tokens = self._default_POS(text)
+                tokens = [word+pos for word, pos in tokens]
+
+            else:
+                tokens = self._default_tokenize(text)
+
+        if self.keywords_mode:   # 关键字模式 ， 默认将会把关键字重复1次
+            tokens = list(tokens)
+            for i in range(1):
+                tokens += self._default_get_keyword(text)
+
         ret = []
         for idx, tok in enumerate(tokens):
             if tok not in self.tok2idx:
@@ -57,6 +103,42 @@ class GroceryTextPreProcessor(object):
 
 
 class GroceryFeatureGenerator(object):
+    def __init__(self):
+        self.ngram2fidx = {'>>dummy<<': 0}
+        self.fidx2ngram = None
+
+    def unigram(self, tokens):
+        feat = defaultdict(int)
+        NG = self.ngram2fidx
+        for x in tokens:
+            if (x,) not in NG:
+                NG[x,] = len(NG)
+            feat[NG[x,]] += 1
+        return feat
+
+    def bigram(self, tokens):
+        feat = self.unigram(tokens)
+        NG = self.ngram2fidx
+        for x, y in zip(tokens[:-1], tokens[1:]):
+            if (x, y) not in NG:
+                NG[x, y] = len(NG)
+            feat[NG[x, y]] += 1
+        return feat
+
+    def save(self, dest_file):
+        self.fidx2ngram = _dict2list(self.ngram2fidx)
+        config = {'fidx2ngram': self.fidx2ngram}
+        pickle.dump(config, open(dest_file, 'wb'), -1)
+
+    def load(self, src_file):
+        config = pickle.load(open(src_file, 'rb'))
+        self.fidx2ngram = config['fidx2ngram']
+        self.ngram2fidx = _list2dict(self.fidx2ngram)
+        return self
+
+
+
+class GrocerySentimentFeatureGenerator(object):
     def __init__(self):
         self.ngram2fidx = {'>>dummy<<': 0}
         self.fidx2ngram = None
@@ -155,7 +237,7 @@ class GroceryTextConverter(object):
                     label, text = line
                 except ValueError:
                     continue
-                feat, label = self.to_svm(text, label)
+                feat, label = self.to_svm(text.strip(), label)
                 w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
 
     def save(self, dest_dir):

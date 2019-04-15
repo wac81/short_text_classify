@@ -52,8 +52,9 @@ class GroceryTextModel(object):
         if not isinstance(text, str):
             raise TypeError('The argument should be plain text')
         # process unicode type
-        if isinstance(text, str):
-            text = text.encode('utf-8')
+        # if isinstance(text, str):
+        #     text = text.encode('utf-8')
+
         text = self.text_converter.to_svm(text)
         y, dec = predict_one(text, self.svm_model)
         y = self.text_converter.get_class_name(int(y))
