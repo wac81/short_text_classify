@@ -43,7 +43,7 @@ def del_punc(t):
     return t
 
 class GroceryTextPreProcessor(object):
-    def __init__(self, stopwords_mode=False, keywords_mode=True, POS_mode=True):
+    def __init__(self, stopwords_mode=False, keywords_mode=True, POS_mode=False):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
@@ -57,7 +57,7 @@ class GroceryTextPreProcessor(object):
         return jieba.cut(text.strip(), cut_all=True)
 
     @staticmethod
-    def _default_get_keyword(text, topK=2):
+    def _default_get_keyword(text, topK=3):
         return jieba.analyse.extract_tags(text, topK)
 
     @staticmethod
@@ -66,14 +66,19 @@ class GroceryTextPreProcessor(object):
 
 
     def preprocess(self, text, custom_tokenize):
-        text = del_punc(text)  # 去除标点，和停用词区分开
+        # text = del_punc(text)  # 去除标点，和停用词区分开
 
         if custom_tokenize is not None:
             tokens = custom_tokenize(text)
         else:
             if self.POS_mode:
                 tokens = self._default_POS(text)
-                tokens = [word+pos for word, pos in tokens]
+                temp_word = []
+                temp_pos = []
+                for word, pos in tokens:
+                    temp_word.append(word)
+                    temp_pos.append(pos)
+                tokens = temp_word + temp_pos
 
             else:
                 tokens = self._default_tokenize(text)

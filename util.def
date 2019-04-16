@@ -1,0 +1,7 @@
+LIBRARY util
+EXPORTS
+	read_problem	@1
+	freeSVMProblem  @2
+	compute_idf @3
+	normalize	@4
+	merge_problems  @5

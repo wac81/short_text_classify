@@ -16,7 +16,7 @@ train_src = [
     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 ]
 
-train_src = 'chs_sentences.txt'
+train_src = 'train.txt'
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
@@ -24,16 +24,24 @@ train_svm_file = '%s_train.svm' % name
 
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
 
-model = train(train_svm_file, '', '-s 4')
-model = GroceryTextModel(text_converter, model)
+# model = train(train_svm_file, '', '-s 4')
+# model = GroceryTextModel(text_converter, model)
+# model.save('test')
 
 
+def load(name):
+    text_converter = GroceryTextConverter()
+    model = GroceryTextModel(text_converter)
+    model.load(name)
+    return model
+
+model = load('test')
 
 
 single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
-r = model.predict_text(single_text)
-print(r)
+# r = model.predict_text(single_text)
+# print(r)
 
 
 
