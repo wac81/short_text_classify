@@ -71,6 +71,7 @@ model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
 
+
 def load(name):
     text_converter = GroceryTextConverter()
     model = GroceryTextModel(text_converter)
