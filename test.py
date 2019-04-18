@@ -65,7 +65,22 @@ train_svm_file = '%s_train.svm' % name
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
-model = train(train_svm_file, '', '-s 1')
+
+'''
+-s 1
+neg            98.62%         97.64%         
+neu            94.44%         91.98%         
+pos            99.16%         99.55% 
+
+-s 4
+               accuracy       recall         
+neg            96.59%         96.66%         
+pos            98.67%         99.23%         
+neu            92.15%         85.93%     
+
+
+'''
+model = train(train_svm_file, '', '-s 5')
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
