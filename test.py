@@ -16,7 +16,7 @@ train_src = [
     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 ]
 train_src = []
-# train_src = 'train.txt'
+train_src = 'train.txt'
 
 def preprocess_data(path):
     neg_path = os.path.join(path, 'neg.txt')
@@ -56,15 +56,14 @@ def preprocess_data(path):
 
     return texts
 
-train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
+# train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
-# text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
-
-text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
+text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
+# text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 model = train(train_svm_file, '', '-s 4')
 model = GroceryTextModel(text_converter, model)
@@ -88,11 +87,10 @@ single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
 
 
-test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
+# test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
 
-# test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
-
-test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
+test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
+# test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
 
 print(test_result.accuracy_labels)
 print(test_result.recall_labels)

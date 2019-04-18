@@ -43,7 +43,9 @@ def del_punc(t):
     return t
 
 class GroceryTextPreProcessor(object):
-    def __init__(self, stopwords_mode=False, keywords_mode=True, POS_mode=True):
+    def __init__(self, stopwords_mode=False,
+                 keywords_mode=True,#keywords default True
+                 POS_mode=True):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
@@ -76,17 +78,29 @@ class GroceryTextPreProcessor(object):
                 temp_word = []
                 temp_pos = []
                 for word, pos in tokens:
-                    temp_word.append(word)
-                    temp_pos.append(pos)
-                tokens = temp_word + temp_pos
+                    temp_word.append(word+pos)
+                    # temp_pos.append(pos)
+                # tokens = temp_word + temp_pos
+                tokens = temp_word
 
             else:
                 tokens = self._default_tokenize(text)
 
-        if self.keywords_mode:   # 关键字模式 ， 默认将会把关键字重复1次
-            tokens = list(tokens)
-            for i in range(1):
-                tokens += self._default_get_keyword(text)
+        if self.keywords_mode:
+            if self.POS_mode:
+                tokens = list(tokens)
+                keywords = self._default_get_keyword(text)
+                for i in range(1):    # 关键字模式 ， 默认将会把关键字重复1次
+                    for k in keywords:
+                        for t in tokens:
+                            if k in t:
+                                tokens.append(t)
+                                break
+
+            else:
+                tokens = list(tokens)
+                for i in range(1):
+                    tokens += self._default_get_keyword(text)
 
         ret = []
         for idx, tok in enumerate(tokens):
