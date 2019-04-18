@@ -59,7 +59,7 @@ class GroceryTextPreProcessor(object):
         return jieba.cut(text.strip(), cut_all=True)
 
     @staticmethod
-    def _default_get_keyword(text, topK=3):
+    def _default_get_keyword(text, topK=10):
         return jieba.analyse.extract_tags(text, topK)
 
     @staticmethod
@@ -100,8 +100,10 @@ class GroceryTextPreProcessor(object):
 
             else:
                 tokens = list(tokens)
-                for i in range(1):
-                    tokens += self._default_get_keyword(text)
+                # for i in range(3):
+                key = self._default_get_keyword(text)
+                tokens += ['key' for k in key]
+
 
         ret = []
         for idx, tok in enumerate(tokens):
