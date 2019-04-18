@@ -56,23 +56,23 @@ def preprocess_data(path):
 
     return texts
 
-train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
+# train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
-# text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
-text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
+text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
+# text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 
 '''
--s 1
+-s 1   分类比较少<4
 neg            98.62%         97.64%         
 neu            94.44%         91.98%         
 pos            99.16%         99.55% 
 
--s 4
+-s 4   多分类
                accuracy       recall         
 neg            96.59%         96.66%         
 pos            98.67%         99.23%         
@@ -80,7 +80,7 @@ neu            92.15%         85.93%
 
 
 '''
-model = train(train_svm_file, '', '-s 5')
+model = train(train_svm_file, '', '-s 1')
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
@@ -103,9 +103,9 @@ single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
 
 
-test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
-# test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
-test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
+# test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
+test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
+# test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
 
 print(test_result.accuracy_labels)
 print(test_result.recall_labels)
