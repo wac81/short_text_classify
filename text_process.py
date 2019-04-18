@@ -44,15 +44,13 @@ def del_punc(t):
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
-                 keywords_mode=True,#keywords default True
-                 POS_mode=True,
-                 drop_words=False):
+                 keywords_mode=False,#keywords default True
+                 POS_mode=True):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
         self.keywords_mode = keywords_mode
         self.POS_mode = POS_mode
-        self.drop_words = drop_words
         if stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
 
@@ -61,7 +59,7 @@ class GroceryTextPreProcessor(object):
         return jieba.cut(text.strip(), cut_all=True)
 
     @staticmethod
-    def _default_get_keyword(text, topK=5):
+    def _default_get_keyword(text, topK=3):
         return jieba.analyse.extract_tags(text, topK)
 
     @staticmethod
@@ -89,17 +87,11 @@ class GroceryTextPreProcessor(object):
             else:
                 tokens = self._default_tokenize(text)
 
-        if self.drop_words and len(tokens) > 3: #超过长度3 才可以drop某些词
-            #4:1的比例去掉words
-            drop_words_len = len(tokens)/4
-            tokens = random.choices(tokens, drop_words_len)
-
-
         if self.keywords_mode:
             if self.POS_mode:
                 tokens = list(tokens)
                 keywords = self._default_get_keyword(text)
-                for i in range(1):    # 关键字模式 ， 默认将会把关键字重复1次
+                for i in range(3):    # 关键字模式 ， 默认将会把关键字重复1次
                     for k in keywords:
                         for t in tokens:
                             if k in t:
@@ -232,11 +224,15 @@ class GroceryTextConverter(object):
                 except ValueError:
                     continue
 
-                # # 4:1的比例去掉words  数据扩展
+                # # 4:1的比例去掉words  数据扩展 小数据量可以做 每类超过100可以考虑不做，如果加需仔细考察
                 # tokens = jieba.lcut(text)
-                # if len(tokens) > 5:
-                #     drop_words_len = len(tokens) / 5
-                #     tokens = random.choices(tokens, k=len(tokens)- int(drop_words_len))
+                # if len(tokens) > 6:
+                #     drop_words_len = len(tokens) / 6
+                #     del_tokens = random.choices(tokens, k=int(drop_words_len))
+                #     for del_t in del_tokens:
+                #         if del_t in tokens:
+                #             tokens.remove(del_t)
+                #
                 #     feat, label = self.to_svm(''.join(tokens), label_raw)
                 #     w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
 

@@ -8,3 +8,4 @@ num_round = 2
 bst = xgb.train(param, dtrain, num_round)
 # make prediction
 preds = bst.predict(dtest)
+print(preds)

@@ -16,61 +16,24 @@ name = 'test_model'
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
 
-train_src = 'train.txt'
+# train_src = 'train_src'
+# test_src = 'test_src'
 
-def preprocess_data(path):
-    neg_path = os.path.join(path, 'neg.txt')
-    neu_path = os.path.join(path, 'neu.txt')
-    pos_path = os.path.join(path, 'pos.txt')
-
-    sentences = []
-    y_true = []
-
-    texts = []
-    with open(neg_path, 'r') as f:
-        temp = f.readlines()
-        temp = list(set(temp))
-        sentences += temp
-        for s in temp:
-            texts.append(('neg', s.strip()))
-        # y_true += [[1.0, 0.0, 0.0] for x in range(len(temp))]
-        # np.full((0, len(temp)), 0)
-        print ('load neg...')
-
-    with open(neu_path, 'r') as f:
-        temp = f.readlines()
-        temp = list(set(temp))
-        sentences += temp
-        for s in temp:
-            texts.append(('neu', s.strip()))
-        print ('load neu...')
-
-    with open(pos_path, 'r') as f:
-        temp = f.readlines()
-        temp = list(set(temp))
-        sentences += temp
-        for s in temp:
-            texts.append(('pos', s.strip()))
-        print ('load pos...')
-
-
-    return texts
-
-# train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
+train_src = 'train_chs'
+test_src = 'test_chs'
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
-text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
-# text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
+
+
+# text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
+text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 
 '''
--s 1   分类比较少<4
-neg            98.62%         97.64%         
-neu            94.44%         91.98%         
-pos            99.16%         99.55% 
+
 
 -s 4   多分类
                accuracy       recall         
@@ -78,9 +41,10 @@ neg            96.59%         96.66%
 pos            98.67%         99.23%         
 neu            92.15%         85.93%     
 
+-s 5 最好
 
 '''
-model = train(train_svm_file, '', '-s 1')
+model = train(train_svm_file, '', '-s 4')  #4, 5
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
@@ -104,9 +68,10 @@ single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
 
 # test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
-test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
+test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
 # test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
 
 print(test_result.accuracy_labels)
 print(test_result.recall_labels)
 test_result.show_result()
+print(test_result)
