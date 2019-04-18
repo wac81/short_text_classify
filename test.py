@@ -9,13 +9,13 @@ custom_tokenize = None
 train_svm_file = None
 delimiter='\t'
 name = 'test_model'
-train_src = [
-    ('education', '名师指导托福语法技巧：名词的复数形式'),
-    ('education', '中国高考成绩海外认可 是“狼来了”吗？'),
-    ('sports', '图文：法网孟菲尔斯苦战进16强 孟菲尔斯怒吼'),
-    ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
-]
-train_src = []
+# train_src = [
+#     ('education', '名师指导托福语法技巧：名词的复数形式'),
+#     ('education', '中国高考成绩海外认可 是“狼来了”吗？'),
+#     ('sports', '图文：法网孟菲尔斯苦战进16强 孟菲尔斯怒吼'),
+#     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
+# ]
+
 train_src = 'train.txt'
 
 def preprocess_data(path):
@@ -56,16 +56,16 @@ def preprocess_data(path):
 
     return texts
 
-# train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
+train_src = preprocess_data('./text_feature_extract/data/train_corpus/')
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
-text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
-# text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
+# text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
+text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
-model = train(train_svm_file, '', '-s 4')
+model = train(train_svm_file, '', '-s 1')
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
@@ -79,6 +79,7 @@ def load(name):
 
 model = load('sentiment')
 
+# model = load('test')
 
 single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
@@ -87,10 +88,9 @@ single_text = '中国高考成绩海外认可 是“狼来了”吗'
 
 
 
-# test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
-
-test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
-# test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
+test_src = preprocess_data('./text_feature_extract/data/eye_shadow/')
+# test_result = GroceryTest(model).test(text_src='test.txt',delimiter='    ')
+test_result = GroceryTest(model).test(text_src=test_src,delimiter='\t')
 
 print(test_result.accuracy_labels)
 print(test_result.recall_labels)

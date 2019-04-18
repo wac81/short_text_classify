@@ -5,7 +5,7 @@ import os
 import jieba
 import jieba.analyse
 import jieba.posseg as psg
-
+import random
 
 
 from base import *
@@ -45,12 +45,14 @@ def del_punc(t):
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
                  keywords_mode=True,#keywords default True
-                 POS_mode=True):
+                 POS_mode=True,
+                 drop_words=False):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
         self.keywords_mode = keywords_mode
         self.POS_mode = POS_mode
+        self.drop_words = drop_words
         if stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
 
@@ -59,7 +61,7 @@ class GroceryTextPreProcessor(object):
         return jieba.cut(text.strip(), cut_all=True)
 
     @staticmethod
-    def _default_get_keyword(text, topK=3):
+    def _default_get_keyword(text, topK=5):
         return jieba.analyse.extract_tags(text, topK)
 
     @staticmethod
@@ -78,13 +80,20 @@ class GroceryTextPreProcessor(object):
                 temp_word = []
                 temp_pos = []
                 for word, pos in tokens:
-                    temp_word.append(word+pos)
-                    # temp_pos.append(pos)
+                    temp_word.append(word+pos[0])
+                    # temp_word.append(word)
+                    # temp_pos.append(pos[0])
                 # tokens = temp_word + temp_pos
                 tokens = temp_word
 
             else:
                 tokens = self._default_tokenize(text)
+
+        if self.drop_words and len(tokens) > 3: #超过长度3 才可以drop某些词
+            #4:1的比例去掉words
+            drop_words_len = len(tokens)/4
+            tokens = random.choices(tokens, drop_words_len)
+
 
         if self.keywords_mode:
             if self.POS_mode:
@@ -157,41 +166,6 @@ class GroceryFeatureGenerator(object):
 
 
 
-class GrocerySentimentFeatureGenerator(object):
-    def __init__(self):
-        self.ngram2fidx = {'>>dummy<<': 0}
-        self.fidx2ngram = None
-
-    def unigram(self, tokens):
-        feat = defaultdict(int)
-        NG = self.ngram2fidx
-        for x in tokens:
-            if (x,) not in NG:
-                NG[x,] = len(NG)
-            feat[NG[x,]] += 1
-        return feat
-
-    def bigram(self, tokens):
-        feat = self.unigram(tokens)
-        NG = self.ngram2fidx
-        for x, y in zip(tokens[:-1], tokens[1:]):
-            if (x, y) not in NG:
-                NG[x, y] = len(NG)
-            feat[NG[x, y]] += 1
-        return feat
-
-    def save(self, dest_file):
-        self.fidx2ngram = _dict2list(self.ngram2fidx)
-        config = {'fidx2ngram': self.fidx2ngram}
-        pickle.dump(config, open(dest_file, 'wb'), -1)
-
-    def load(self, src_file):
-        config = pickle.load(open(src_file, 'rb'))
-        self.fidx2ngram = config['fidx2ngram']
-        self.ngram2fidx = _list2dict(self.fidx2ngram)
-        return self
-
-
 class GroceryClassMapping(object):
     def __init__(self):
         self.class2idx = {}
@@ -242,6 +216,7 @@ class GroceryTextConverter(object):
 
     def to_svm(self, text, class_name=None):
         feat = self.feat_gen.bigram(self.text_prep.preprocess(text, self.custom_tokenize))
+
         if class_name is None:
             return feat
         return feat, self.class_map.to_idx(class_name)
@@ -253,11 +228,23 @@ class GroceryTextConverter(object):
         with open(output, 'w') as w:
             for line in text_src:
                 try:
-                    label, text = line
+                    label_raw, text = line
                 except ValueError:
                     continue
-                feat, label = self.to_svm(text.strip(), label)
+
+                # # 4:1的比例去掉words  数据扩展
+                # tokens = jieba.lcut(text)
+                # if len(tokens) > 5:
+                #     drop_words_len = len(tokens) / 5
+                #     tokens = random.choices(tokens, k=len(tokens)- int(drop_words_len))
+                #     feat, label = self.to_svm(''.join(tokens), label_raw)
+                #     w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
+
+                # 正常数据
+                feat, label = self.to_svm(text.strip(), label_raw)
                 w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
+
+
 
     def save(self, dest_dir):
         config = {
