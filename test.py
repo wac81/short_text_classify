@@ -5,6 +5,8 @@ from text_process import *
 from learner_impl import *
 from classifier import *
 
+from bert_serving.client import BertClient
+
 custom_tokenize = None
 train_svm_file = None
 delimiter='\t'
@@ -16,15 +18,16 @@ name = 'test_model'
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
 
-# train_src = 'train_src'
-# test_src = 'test_src'
+train_src = 'train_src'
+test_src = 'test_src'
 
-train_src = 'train_chs'
-test_src = 'test_chs'
+# train_src = 'train_chs'
+# test_src = 'test_chs'
 
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
+
 
 
 
@@ -33,18 +36,16 @@ text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 
 '''
-
-
--s 4   多分类
+-s 4   多分类 大数据量  
                accuracy       recall         
 neg            96.59%         96.66%         
 pos            98.67%         99.23%         
 neu            92.15%         85.93%     
 
--s 5 最好
+-s 5 小数据量最好,加数据扩展最好
 
 '''
-model = train(train_svm_file, '', '-s 4')  #4, 5
+model = train(train_svm_file, '', '-s 5 -c 1.1')  #4, 5
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 

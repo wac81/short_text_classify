@@ -6,9 +6,12 @@ import jieba
 import jieba.analyse
 import jieba.posseg as psg
 import random
-
-
+from bert_serving.client import BertClient
 from base import *
+import numpy as np
+
+bc = BertClient()
+
 
 __all__ = ['GroceryTextConverter']
 
@@ -45,12 +48,14 @@ def del_punc(t):
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
                  keywords_mode=False,#keywords default True
-                 POS_mode=True):
+                 POS_mode=False,
+                 bert_mode=True):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
         self.keywords_mode = keywords_mode
         self.POS_mode = POS_mode
+        self.bert_mode = bert_mode
         if stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
 
@@ -208,12 +213,42 @@ class GroceryTextConverter(object):
     def get_class_name(self, class_idx):
         return self.class_map.to_class_name(class_idx)
 
+    def bert_transform(self, text):
+        vec = bc.encode([text])
+
+        return vec
     def to_svm(self, text, class_name=None):
-        feat = self.feat_gen.bigram(self.text_prep.preprocess(text, self.custom_tokenize))
+        feat = self.feat_gen.unigram(self.text_prep.preprocess(text, self.custom_tokenize))
+
+        #bert
+        text_vec = self.bert_transform(text)
+        #del start and end
+        text_vec = text_vec[0][1:len(text)+1]
+        for i, char in enumerate(text):
+            if i < len(text_vec):
+                if char in self.text_prep.tok2idx.keys():
+                    idx = self.text_prep.tok2idx[char]
+                    char_vec = text_vec[i]
+                    char_vec = np.mean(char_vec)
+                    feat[idx] = char_vec + feat[idx]  # 乘以字符本来的频率
+                elif i+1 < len(text_vec) and len(text) > i+1 and char+text[i+1] in self.text_prep.tok2idx.keys():
+                    idx = self.text_prep.tok2idx[char+text[i+1]]
+                    char1_vec = text_vec[i]
+                    char2_vec = text_vec[i+1]
+                    char_vec = np.mean(char1_vec + char2_vec)
+                    feat[idx] = char_vec + feat[idx]  # 乘以字符本来的频率
+
+                else:
+                    pass
+
+
+
 
         if class_name is None:
             return feat
         return feat, self.class_map.to_idx(class_name)
+
+
 
     def convert_text(self, text_src, delimiter, output=None):
         if not output:
@@ -237,6 +272,9 @@ class GroceryTextConverter(object):
                 #
                 #     feat, label = self.to_svm(''.join(tokens), label_raw)
                 #     w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
+
+
+
 
                 # 正常数据
                 feat, label = self.to_svm(text.strip(), label_raw)
