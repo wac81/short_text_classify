@@ -220,40 +220,41 @@ class GroceryTextConverter(object):
     def to_svm(self, text, class_name=None):
         feat = self.feat_gen.unigram(self.text_prep.preprocess(text, self.custom_tokenize))
 
-        #bert
-        text_vec = self.bert_transform(text)
-        #del start and end
-        text_vec = text_vec[0][1:len(text)+1]
+        if self.text_prep.bert_mode:
+            #bert
+            text_vec = self.bert_transform(text)
+            #del start and end
+            text_vec = text_vec[0][1:len(text)+1]
 
-        if self.text_prep.POS_mode:
-            tokens = [t[:-1] for t in self.text_prep.tok2idx.keys()]
-        else:
-            tokens = self.text_prep.tok2idx.keys()
+            if self.text_prep.POS_mode:
+                tokens = [t[:-1] for t in self.text_prep.tok2idx.keys()]
+            else:
+                tokens = self.text_prep.tok2idx.keys()
 
-        for i, char in enumerate(text):
-            if i < len(text_vec):
-                if char in tokens:
-                    for k in self.text_prep.tok2idx.keys():
-                        if char in k:      #对齐包含pos的char，并得到idx
-                            idx = self.text_prep.tok2idx[k]
-                            break
-
-                    char_vec = text_vec[i]
-                    char_vec = np.mean(char_vec)
-                    feat[idx+100000] = char_vec  # 乘以字符本来的频率
-                elif i+1 < len(text_vec) and len(text) > i+1 and char+text[i+1] in self.text_prep.tok2idx.keys():
+            for i, char in enumerate(text):
+                if i < len(text_vec):
                     if char in tokens:
                         for k in self.text_prep.tok2idx.keys():
-                            if char in k:  # 对齐包含pos的char，并得到idx
-                                idx = self.text_prep.tok2idx[char + text[i + 1]]
+                            if char in k:      #对齐包含pos的char，并得到idx
+                                idx = self.text_prep.tok2idx[k]
                                 break
 
-                    char1_vec = text_vec[i]
-                    char2_vec = text_vec[i+1]
-                    char_vec = np.mean(char1_vec + char2_vec)
-                    feat[idx+100000] = char_vec  # 乘以字符本来的频率
-                else:
-                    pass
+                        char_vec = text_vec[i]
+                        char_vec = np.mean(char_vec)
+                        feat[idx] = char_vec + feat[idx]  # 乘以字符本来的频率
+                    elif i+1 < len(text_vec) and len(text) > i+1 and char+text[i+1] in self.text_prep.tok2idx.keys():
+                        if char in tokens:
+                            for k in self.text_prep.tok2idx.keys():
+                                if char in k:  # 对齐包含pos的char，并得到idx
+                                    idx = self.text_prep.tok2idx[char + text[i + 1]]
+                                    break
+
+                        char1_vec = text_vec[i]
+                        char2_vec = text_vec[i+1]
+                        char_vec = np.mean(char1_vec + char2_vec)
+                        feat[idx] = char_vec + feat[idx]  # 乘以字符本来的频率
+                    else:
+                        pass
 
 
 
