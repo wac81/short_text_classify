@@ -255,7 +255,22 @@ class GroceryTextConverter(object):
                     else:
                         pass
 
-
+        # if self.text_prep.keywords_mode:
+        #     if self.text_prep.POS_mode:
+        #         tokens = list(tokens)
+        #         keywords = self.text_prep._default_get_keyword(text)
+        #         for i in range(3):    # 关键字模式 ， 默认将会把关键字重复1次
+        #             for k in keywords:
+        #                 for t in tokens:
+        #                     if k in t:
+        #                         tokens.append(t)
+        #                         break
+        #
+        #     else:
+        #         tokens = list(tokens)
+        #         # for i in range(3):
+        #         key = self._default_get_keyword(text)
+        #         tokens += ['key' for k in key]
 
 
         if class_name is None:
