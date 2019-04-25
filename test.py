@@ -28,8 +28,6 @@ text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
 
-
-
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
