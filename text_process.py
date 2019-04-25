@@ -241,7 +241,7 @@ class GroceryTextConverter(object):
 
                         char_vec = text_vec[i]
                         char_vec = np.mean(char_vec)
-                        feat[idx] = char_vec     # 乘以字符本来的频率
+                        feat[idx+100000] = char_vec * feat[idx]     # 乘以字符本来的频率
                     elif i+1 < len(text_vec) and len(text) > i+1 and char+text[i+1] in self.text_prep.tok2idx.keys():
                         for k in self.text_prep.tok2idx.keys():
                             if char in k:  # 对齐包含pos的char，并得到idx
@@ -251,7 +251,7 @@ class GroceryTextConverter(object):
                         char1_vec = text_vec[i]
                         char2_vec = text_vec[i+1]
                         char_vec = np.mean(char1_vec + char2_vec)
-                        feat[idx] = char_vec     # 乘以字符本来的频率
+                        feat[idx+100000] = char_vec * feat[idx]     # 乘以字符本来的频率
                     else:
                         pass
 
