@@ -232,6 +232,7 @@ class GroceryTextConverter(object):
                 tokens = self.text_prep.tok2idx.keys()
             offset_len = len(tokens)
             offset_len = 10000000
+
             for i, char in enumerate(text):
                 if i < len(text_vec):
                     if char in tokens:
