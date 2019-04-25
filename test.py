@@ -18,11 +18,11 @@ name = 'test_model'
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
 
-# train_src = 'train_src'
-# test_src = 'test_src'
+train_src = 'train_src'
+test_src = 'test_src'
 
-train_src = 'train_chs'
-test_src = 'test_chs'
+# train_src = 'train_chs'
+# test_src = 'test_chs'
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
