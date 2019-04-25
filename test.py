@@ -24,7 +24,6 @@ name = 'test_model'
 train_src = 'train_chs'
 test_src = 'test_chs'
 
-
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 
