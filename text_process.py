@@ -47,9 +47,9 @@ def del_punc(t):
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
-                 keywords_mode=True,#keywords default True
+                 keywords_mode=False,#keywords default True
                  POS_mode=True,
-                 bert_mode=True):
+                 bert_mode=False):
 
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
