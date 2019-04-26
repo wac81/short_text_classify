@@ -244,8 +244,8 @@ class GroceryTextConverter(object):
                                 break
 
                         char_vec = text_vec[i]
-                        # char_vec = np.float16(np.mean(char_vec))
-                        char_vec = np.float16(np.sum(char_vec))
+                        char_vec = np.float16(np.mean(char_vec))
+                        # char_vec = np.float16(np.sum(char_vec))
 
                         feat[idx+offset_len] = char_vec + feat[idx]     # 加法更有效， 乘以字符本来的频率
                     elif i+1 < len(text_vec) and len(text) > i+1 and char+text[i+1] in self.text_prep.tok2idx.keys():
