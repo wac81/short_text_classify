@@ -268,7 +268,7 @@ class GroceryTextConverter(object):
                 for t in self.text_prep.tok2idx.keys():
                     if k in t:
                         idx = self.text_prep.tok2idx[t]
-                        feat[idx + offset_len] = 1
+                        feat[idx] = feat[idx] * 2
                         break
 
 
