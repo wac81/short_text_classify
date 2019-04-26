@@ -265,10 +265,11 @@ class GroceryTextConverter(object):
         if self.text_prep.keywords_mode:
             keywords = self.text_prep._default_get_keyword(text)
             for k in keywords:
-                if k in tokens:
-                    idx = self.text_prep.tok2idx[k]
-                    feat[idx + offset_len] = 1.2
-                    break
+                for t in self.text_prep.tok2idx.keys():
+                    if k in t:
+                        idx = self.text_prep.tok2idx[t]
+                        feat[idx + offset_len] = 1.2
+                        break
 
 
 
