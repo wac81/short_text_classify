@@ -48,7 +48,7 @@ def del_punc(t):
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
                  keywords_mode=False,#keywords default True
-                 POS_mode=True,
+                 POS_mode=False,
                  bert_mode=True):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
@@ -232,7 +232,6 @@ class GroceryTextConverter(object):
                 tokens = self.text_prep.tok2idx.keys()
             offset_len = len(tokens)
             offset_len = 10000000
-
             for i, char in enumerate(text):
                 if i < len(text_vec):
                     if char in tokens:
