@@ -266,7 +266,7 @@ class GroceryTextConverter(object):
             for k in keywords:
                 if k in tokens:
                     idx = self.text_prep.tok2idx[k]
-                    feat[idx + offset_len] = 1.5
+                    feat[idx + offset_len] = 1.2
                     break
 
 
