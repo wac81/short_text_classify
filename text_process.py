@@ -48,7 +48,7 @@ def del_punc(t):
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
                  keywords_mode=True,#keywords default True
-                 POS_mode=False,
+                 POS_mode=True,
                  bert_mode=False):
 
         # index must start from 1
@@ -74,7 +74,7 @@ class GroceryTextPreProcessor(object):
 
 
     def preprocess(self, text, custom_tokenize):
-        # text = del_punc(text)  # 去除标点，和停用词区分开
+        text = del_punc(text)  # 去除标点，和停用词区分开
 
         if custom_tokenize is not None:
             tokens = custom_tokenize(text)
@@ -84,6 +84,7 @@ class GroceryTextPreProcessor(object):
                 temp_word = []
                 temp_pos = []
                 for word, pos in tokens:
+                    temp_word.append(word)
                     temp_word.append(word+pos[0])
                     # temp_word.append(word)
                     # temp_pos.append(pos[0])
