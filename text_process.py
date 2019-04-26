@@ -47,7 +47,7 @@ def del_punc(t):
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
-                 keywords_mode=False,#keywords default True
+                 keywords_mode=True,#keywords default True
                  POS_mode=False,
                  bert_mode=True):
         # index must start from 1
@@ -92,22 +92,22 @@ class GroceryTextPreProcessor(object):
             else:
                 tokens = self._default_tokenize(text)
 
-        if self.keywords_mode:
-            if self.POS_mode:
-                tokens = list(tokens)
-                keywords = self._default_get_keyword(text)
-                for i in range(3):    # 关键字模式 ， 默认将会把关键字重复1次
-                    for k in keywords:
-                        for t in tokens:
-                            if k in t:
-                                tokens.append(t)
-                                break
-
-            else:
-                tokens = list(tokens)
-                # for i in range(3):
-                key = self._default_get_keyword(text)
-                tokens += ['key' for k in key]
+        # if self.keywords_mode:
+        #     if self.POS_mode:
+        #         tokens = list(tokens)
+        #         keywords = self._default_get_keyword(text)
+        #         for i in range(3):    # 关键字模式 ， 默认将会把关键字重复1次
+        #             for k in keywords:
+        #                 for t in tokens:
+        #                     if k in t:
+        #                         tokens.append(t)
+        #                         break
+        #
+        #     else:
+        #         tokens = list(tokens)
+        #         # for i in range(3):
+        #         key = self._default_get_keyword(text)
+        #         tokens += ['key' for k in key]
 
 
         ret = []
@@ -220,16 +220,18 @@ class GroceryTextConverter(object):
     def to_svm(self, text, class_name=None):
         feat = self.feat_gen.unigram(self.text_prep.preprocess(text, self.custom_tokenize))
 
+        if self.text_prep.POS_mode:
+            tokens = [t[:-1] for t in self.text_prep.tok2idx.keys()]
+        else:
+            tokens = self.text_prep.tok2idx.keys()
+
         if self.text_prep.bert_mode:
             #bert
             text_vec = self.bert_transform(text)
             #del start and end
             text_vec = text_vec[0][1:len(text)+1]
 
-            if self.text_prep.POS_mode:
-                tokens = [t[:-1] for t in self.text_prep.tok2idx.keys()]
-            else:
-                tokens = self.text_prep.tok2idx.keys()
+
             offset_len = len(tokens)
             offset_len = 10000000
             for i, char in enumerate(text):
@@ -258,23 +260,15 @@ class GroceryTextConverter(object):
                     else:
                         pass
 
+        offset_len = 20000000
+        if self.text_prep.keywords_mode:
+            keywords = self.text_prep._default_get_keyword(text)
+            for k in keywords:
+                if k in tokens:
+                    idx = self.text_prep.tok2idx[k]
+                    break
 
-        # if self.text_prep.keywords_mode:
-        #     if self.text_prep.POS_mode:
-        #         tokens = list(tokens)
-        #         keywords = self.text_prep._default_get_keyword(text)
-        #         for i in range(3):    # 关键字模式 ， 默认将会把关键字重复1次
-        #             for k in keywords:
-        #                 for t in tokens:
-        #                     if k in t:
-        #                         tokens.append(t)
-        #                         break
-        #
-        #     else:
-        #         tokens = list(tokens)
-        #         # for i in range(3):
-        #         key = self._default_get_keyword(text)
-        #         tokens += ['key' for k in key]
+            feat[idx + offset_len] = 1.5
 
 
         if class_name is None:
