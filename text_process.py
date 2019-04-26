@@ -50,6 +50,7 @@ class GroceryTextPreProcessor(object):
                  keywords_mode=True,#keywords default True
                  POS_mode=True,
                  bert_mode=False):
+
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
