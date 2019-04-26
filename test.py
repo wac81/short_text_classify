@@ -42,7 +42,7 @@ neu            92.15%         85.93%
 -s 5 小数据量最好,加数据扩展最好
 
 '''
-model = train(train_svm_file, '', '-s 5 -c 1.1')  #4, 5
+model = train(train_svm_file, '', '-s 4 -c 1.1')  #4, 5
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 
