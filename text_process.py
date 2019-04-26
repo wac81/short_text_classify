@@ -49,7 +49,7 @@ class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
                  keywords_mode=False,#keywords default True
                  POS_mode=True,
-                 bert_mode=False):
+                 bert_mode=True):
 
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
