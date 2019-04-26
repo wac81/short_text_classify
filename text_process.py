@@ -47,7 +47,7 @@ def del_punc(t):
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
-                 keywords_mode=False,#keywords default True
+                 keywords_mode=True,#keywords default True
                  POS_mode=True,
                  bert_mode=False):
 
