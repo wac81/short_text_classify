@@ -1,0 +1,24 @@
+CXX = cl.exe
+CFLAGS = /nologo /O2 /EHsc /I. /Iliblinear /D _WIN64 /D _CRT_SECURE_NO_DEPRECATE
+TARGET = util
+
+liball: lib test
+    cd liblinear && $(MAKE) -f Makefile.win clean liball && cd ..
+# remove temp files
+    -erase /Q *.obj *.lib *.exp
+
+all: lib  test
+	cd liblinear && $(MAKE) -f Makefile.win clean all && cd ..
+
+test: $(TARGET).obj
+	$(CXX) $(CFLAGS) -c  -Iliblinear  test.cpp -o test
+
+lib: $(TARGET).obj
+	$(CXX) $(CFLAGS) -LD $(TARGET).c  -Feutil -link -DEF:$(TARGET).def
+
+$(TARGET).obj: $(TARGET).c
+	$(CXX) $(CFLAGS) -c $(TARGET).c
+
+clean:
+	-erase /Q *.obj *.dll *pyc test *.lib *.exp
+	cd liblinear && $(MAKE) -f Makefile.win clean && cd ..

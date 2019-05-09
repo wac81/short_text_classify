@@ -1,10 +1,10 @@
-import uuid
 import os
 import shutil
+import uuid
 
-from .text_process import GroceryTextConverter
-from .learner_impl import *
+from stclassify.svc_impl.learner_impl import *
 from .base import *
+from .text_process import GroceryTextConverter
 
 
 class GroceryTextModel(object):

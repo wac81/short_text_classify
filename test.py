@@ -1,9 +1,9 @@
 
 
-from text_process import *
-
 # from learner_impl import *
-from classifier import *
+from stclassify.classifier import *
+
+from stclassify.text_process import *
 
 # from bert_serving.client import BertClient
 
@@ -17,12 +17,13 @@ name = 'test_model'
 #     ('sports', '图文：法网孟菲尔斯苦战进16强 孟菲尔斯怒吼'),
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
+dir = './data'
+train_src = os.path.join(dir, 'train_src')
+test_src = os.path.join(dir, 'test_src')
 
-train_src = 'train_src'
-test_src = 'test_src'
 
-# train_src = 'train_chs'
-# test_src = 'test_chs'
+# train_src = os.path.join(dir, 'train_chs')
+# test_src = os.path.join(dir, 'test_chs')
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
@@ -43,10 +44,10 @@ neu            59.28%         41.95%
 0.9005466577155462
 -N 1 -T 0 , '-s 4 -c 1.'  extend enabled
 
--s 5 小数据量最好,加数据扩展最好
+-s 5 -c 1.1  小数据量最好,加数据扩展最好
 
 '''
-model = train(train_svm_file, '-N 1 -T 1', '-s 4 -c 1.')  #4, 5
+model = train(train_svm_file, '-N 1 -T 0', '-s 4 -c 1.')  #4, 5
 model = GroceryTextModel(text_converter, model)
 model.save('sentiment', force=True)
 

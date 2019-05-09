@@ -48,8 +48,8 @@ def del_punc(t):
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
-                 keywords_mode=False,#keywords default True
-                 POS_mode=False,
+                 keywords_mode=True,#keywords default True
+                 POS_mode=True,
                  bert_mode=False,
                  extend_mode=True):
 
@@ -78,22 +78,14 @@ class GroceryTextPreProcessor(object):
 
 
     def preprocess(self, text, custom_tokenize):
-        text = del_punc(text)  # 去除标点，和停用词区分开
+        # text = del_punc(text)  # 去除标点，和停用词区分开
 
         if custom_tokenize is not None:
             tokens = custom_tokenize(text)
         else:
             if self.POS_mode:
                 tokens = self._default_POS(text)
-                temp_word = []
-                temp_pos = []
-                for word, pos in tokens:
-                    # temp_word.append(word)
-                    temp_word.append(word+pos[0])
-                    # temp_word.append(word)
-                    # temp_word.append('pos'+pos[0])  #加入pos标志
-                # tokens = temp_word + temp_pos
-                tokens = temp_word
+                tokens = [word + pos[0] for word, pos in tokens]  #'v去'
 
             else:
                 tokens = self._default_tokenize(text)
@@ -282,32 +274,33 @@ class GroceryTextConverter(object):
                         idx = self.text_prep.tok2idx[t]
                         # if (feat[idx]==0):
                         #     print(t)
-                        feat[idx+offset_len] = np.log(feat_copy[idx])
+                        feat[idx] = feat_copy[idx] * 2   #keywords 改变本身的值
+                            # np.log(feat_copy[idx])
                         # print(feat[idx])
                         break
 
         if self.text_prep.extend_mode:
-            offset_len += 20000
 
 
             # 加入词顺序这种方式不行
+            # offset_len += 20000
             # i = 0
             # for idx in list(feat_copy.keys()):
             #     i+=1
             #     feat[idx+offset_len] = i
 
-            #加入词的log信息
-            # offset_len = 180000
+            #加入词的log信息(复制)
+            offset_len += 20000
             for idx in list(feat_copy.keys()):
                 feat[idx+offset_len] = np.log(feat_copy[idx])
 
 
-            #加入词频率/句子中字数
-            # offset_len = 200000
+            # #加入词频率/句子中字数
+            # offset_len += 20000
             # for idx in list(feat_copy.keys()):
             #     feat[idx + offset_len] = feat_copy[idx]/len(feat_copy.keys())
-
-                # print(feat_copy[idx]/len(feat_copy.keys()))
+            #
+            #     print(feat_copy[idx]/len(feat_copy.keys()))
 
         # print(offset_len)
         if class_name is None:
