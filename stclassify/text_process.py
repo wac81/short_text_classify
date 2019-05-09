@@ -85,8 +85,8 @@ class GroceryTextPreProcessor(object):
         else:
             if self.POS_mode:
                 tokens = self._default_POS(text)
-                tokens = [word + pos[0] for word, pos in tokens]  #'v去'
-
+                tokens = [word + pos[0] for word, pos in tokens]  #'去v'
+                # tokens += [word for word, pos in tokens]
             else:
                 tokens = self._default_tokenize(text)
 
