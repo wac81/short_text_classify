@@ -31,20 +31,27 @@ def _list2dict(l):
     return dict((v, k) for k, v in enumerate(l))
 
 def del_punc(t):
-    t = t.replace('，', '')
-    t = t.replace('。', '')
-    t = t.replace('？', '')
-    t = t.replace('！', '')
-    t = t.replace('：', '')
-    t = t.replace(';', '')
-    t = t.replace('"', '')
-    t = t.replace('\'', '')
+    # t = t.replace('，', '')
+    # t = t.replace('。', '')
+    # t = t.replace('？', '')
+    # t = t.replace('！', '')
+    # t = t.replace('：', '')
+    # t = t.replace(';', '')
+    # t = t.replace('"', '')
+    # t = t.replace('\'', '')
+    #
+    # t = t.replace('!', '')
+    #
+    # t = t.replace('?', '')
+    # t = t.replace('!', '')
+    # return t
+    temp = ''
+    for word, pos in psg.cut(t.strip()):
+        if pos[0] != 'x':  #去除标点
+            temp += word
 
-    t = t.replace('!', '')
+    return temp
 
-    t = t.replace('?', '')
-    t = t.replace('!', '')
-    return t
 
 class GroceryTextPreProcessor(object):
     def __init__(self, stopwords_mode=False,
