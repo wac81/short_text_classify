@@ -65,11 +65,12 @@ class GroceryTextPreProcessor(object):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
-        self.keywords_mode = True
-        self.POS_mode = True
-        self.bert_mode = False
-        self.ngram_extend_mode = True
         self.stopwords_mode = False
+
+        self.keywords_mode = False
+        self.POS_mode = False
+        self.bert_mode = False
+        self.ngram_extend_mode = False
 
         if self.stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
@@ -323,7 +324,7 @@ class GroceryTextConverter(object):
                                 POS_mode=True,
                                 bert_mode=False,
                                 ngram_extend_mode=True,
-                                extend_new_text=False):
+                                extend_new_text=True):
         self.text_prep.keywords_mode = keywords_mode
         self.text_prep.POS_mode = POS_mode
         self.text_prep.bert_mode = bert_mode
@@ -343,7 +344,7 @@ class GroceryTextConverter(object):
 
                 if self.extend_new_text:
                     # 4:1的比例去掉words  数据扩展 小数据量可以做 每类超过100可以考虑不做，如果加需仔细考察
-                    tokens = jieba.lcut(text)
+                    tokens = jieba.lcut(text.strip())
                     if len(tokens) > 6:
                         drop_words_len = len(tokens) / 6
                         del_tokens = random.choices(tokens, k=int(drop_words_len))
