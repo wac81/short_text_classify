@@ -290,7 +290,7 @@ class GroceryTextConverter(object):
                         # print(feat[idx])
                         break
 
-        if self.text_prep.extend_mode:
+        if self.text_prep.ngram_extend_mode:
 
 
             # 加入词顺序这种方式不行
