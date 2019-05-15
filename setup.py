@@ -28,7 +28,7 @@ class MakeCommand(install):
 
 setuptools.setup(
     name="stclassify",
-    version="0.1.0.12",
+    version="0.1.0.13",
     author="wac",
     author_email="wuanch@gmail.com",
     description="short_text_classify",
