@@ -2,7 +2,7 @@ import os
 import shutil
 import uuid
 
-from stclassify.svc_impl.learner_impl import *
+from .svc_impl import *
 from .base import *
 from .text_process import GroceryTextConverter
 

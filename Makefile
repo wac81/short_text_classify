@@ -1,6 +1,6 @@
 all:
-	make -C tgrocery/learner
+	make -C stclassify/svc_impl
 
 clean:
 	rm -rf *.svm *.converter *.model *.config *.out *.pyc build *.egg-info
-	make -C tgrocery/learner  clean
+	make -C stclassify/svc_impl  clean
