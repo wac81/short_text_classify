@@ -1,0 +1,10 @@
+all:
+    cd stclassify/svc_impl  && $(MAKE) -f Makefile.win clean all && cd ../..
+
+liball:
+    cd stclassify/svc_impl  && $(MAKE) -f Makefile.win clean liball && cd ../..
+
+clean:
+    -erase /Q *.svm *.converter *.model *.config *.out *.pyc
+    -rd /Q /S tgrocery.egg-info build
+    cd tgrocery/learner  && $(MAKE) -f Makefile.win clean && cd ../..
