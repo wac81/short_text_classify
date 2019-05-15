@@ -1,2 +1,2 @@
 include Makefile
-recursive-include stclassify/svc_impl *.c *.cpp *.h *.py Makefile
+recursive-include stclassify/svc_impl *.c *.cpp *.h Makefile
