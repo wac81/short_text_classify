@@ -30,6 +30,10 @@ train_svm_file = '%s_train.svm' % name
 #
 #
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
+text_converter.set_text_parameters(
+                                    keywords_mode=True,
+                                    POS_mode=True,
+                                    extend_new_text=True)
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 

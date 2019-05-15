@@ -54,21 +54,24 @@ def del_punc(t):
 
 
 class GroceryTextPreProcessor(object):
-    def __init__(self, stopwords_mode=False,
-                 keywords_mode=True,#keywords default True
-                 POS_mode=True,
-                 bert_mode=False,
-                 extend_mode=True):
+    def __init__(self,
+                 # stopwords_mode=False,
+                 # keywords_mode=True,#keywords default True
+                 # POS_mode=True,
+                 # bert_mode=False,
+                 # ngram_extend_mode=True
+                 ):
 
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
-        self.keywords_mode = keywords_mode
-        self.POS_mode = POS_mode
-        self.bert_mode = bert_mode
-        self.extend_mode = extend_mode
+        self.keywords_mode = True
+        self.POS_mode = True
+        self.bert_mode = False
+        self.ngram_extend_mode = True
+        self.stopwords_mode = False
 
-        if stopwords_mode:
+        if self.stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
 
     @staticmethod
@@ -211,6 +214,7 @@ class GroceryTextConverter(object):
         self.feat_gen = GroceryFeatureGenerator()
         self.class_map = GroceryClassMapping()
         self.custom_tokenize = custom_tokenize
+        self.extend_new_text = False
 
     def get_class_idx(self, class_name):
         return self.class_map.to_idx(class_name)
@@ -314,7 +318,17 @@ class GroceryTextConverter(object):
             return feat
         return feat, self.class_map.to_idx(class_name)
 
-
+    def set_text_parameters(self,
+                                keywords_mode=True,  # keywords default True
+                                POS_mode=True,
+                                bert_mode=False,
+                                ngram_extend_mode=True,
+                                extend_new_text=False):
+        self.text_prep.keywords_mode = keywords_mode
+        self.text_prep.POS_mode = POS_mode
+        self.text_prep.bert_mode = bert_mode
+        self.text_prep.ngram_extend_mode = ngram_extend_mode
+        self.extend_new_text = extend_new_text
 
     def convert_text(self, text_src, delimiter, output=None):
         if not output:
@@ -327,19 +341,18 @@ class GroceryTextConverter(object):
                 except ValueError:
                     continue
 
-                # # 4:1的比例去掉words  数据扩展 小数据量可以做 每类超过100可以考虑不做，如果加需仔细考察
-                # tokens = jieba.lcut(text)
-                # if len(tokens) > 6:
-                #     drop_words_len = len(tokens) / 6
-                #     del_tokens = random.choices(tokens, k=int(drop_words_len))
-                #     for del_t in del_tokens:
-                #         if del_t in tokens:
-                #             tokens.remove(del_t)
-                #
-                #     feat, label = self.to_svm(''.join(tokens), label_raw)
-                #     w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
+                if self.extend_new_text:
+                    # 4:1的比例去掉words  数据扩展 小数据量可以做 每类超过100可以考虑不做，如果加需仔细考察
+                    tokens = jieba.lcut(text)
+                    if len(tokens) > 6:
+                        drop_words_len = len(tokens) / 6
+                        del_tokens = random.choices(tokens, k=int(drop_words_len))
+                        for del_t in del_tokens:
+                            if del_t in tokens:
+                                tokens.remove(del_t)
 
-
+                        feat, label = self.to_svm(''.join(tokens), label_raw)
+                        w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
 
 
                 # 正常数据
