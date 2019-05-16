@@ -68,7 +68,7 @@ class GroceryTextPreProcessor(object):
         self.stopwords_mode = False
 
         self.keywords_mode = False
-        self.POS_mode = False
+        self.POS_mode = True
         self.bert_mode = False
         self.ngram_extend_mode = False
 
@@ -77,7 +77,7 @@ class GroceryTextPreProcessor(object):
 
     @staticmethod
     def _default_tokenize(text):
-        return jieba.cut(text.strip(), cut_all=True)
+        return jieba.cut(text.strip(), cut_all=False)
 
     @staticmethod
     def _default_get_keyword(text, topK=10):
@@ -95,8 +95,12 @@ class GroceryTextPreProcessor(object):
             tokens = custom_tokenize(text)
         else:
             if self.POS_mode:
+                cutall = self._default_tokenize(text)
                 tokens = self._default_POS(text)
-                tokens = [word + pos[0] for word, pos in tokens]  #'去v'
+                for word, pos in tokens:
+                    if word in list(cutall):
+                        tokens.append(word + pos[0])
+                    # tokens = [word + pos[0] if word in list(cutall) for word, pos in tokens]  #ex: '去v'
                 # tokens += [word for word, pos in tokens]
             else:
                 tokens = self._default_tokenize(text)
@@ -339,12 +343,13 @@ class GroceryTextConverter(object):
             for line in text_src:
                 try:
                     label_raw, text = line
+                    text = text.strip()
                 except ValueError:
                     continue
 
                 if self.extend_new_text:
                     # 4:1的比例去掉words  数据扩展 小数据量可以做 每类超过100可以考虑不做，如果加需仔细考察
-                    tokens = jieba.lcut(text.strip())
+                    tokens = jieba.lcut(text)
                     if len(tokens) > 6:
                         drop_words_len = len(tokens) / 6
                         del_tokens = random.choices(tokens, k=int(drop_words_len))
@@ -357,7 +362,7 @@ class GroceryTextConverter(object):
 
 
                 # 正常数据
-                feat, label = self.to_svm(text.strip(), label_raw)
+                feat, label = self.to_svm(text, label_raw)
                 w.write('%s %s\n' % (label, ''.join(' {0}:{1}'.format(f, feat[f]) for f in sorted(feat))))
 
 

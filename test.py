@@ -18,12 +18,12 @@ name = 'test_model'
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
 dir = './data'
-# train_src = os.path.join(dir, 'train_src')
-# test_src = os.path.join(dir, 'test_src')
+train_src = os.path.join(dir, 'train_src')
+test_src = os.path.join(dir, 'test_src')
 
 
-train_src = os.path.join(dir, 'train_chs')
-test_src = os.path.join(dir, 'test_chs')
+# train_src = os.path.join(dir, 'train_chs')
+# test_src = os.path.join(dir, 'test_chs')
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
@@ -31,9 +31,9 @@ train_svm_file = '%s_train.svm' % name
 #
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
 text_converter.set_text_parameters(
-                                    keywords_mode=True,
-                                    POS_mode=True,
-                                    extend_new_text=True,
+                                    keywords_mode=False,
+                                    POS_mode=False,
+                                    extend_new_text=False,
                                     ngram_extend_mode=True
 )
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
