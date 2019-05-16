@@ -18,5 +18,3 @@ clean:
 
 .c.o:
 	$(CC) $(CFLAGS) -c $*.c
-
-

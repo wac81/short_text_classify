@@ -21,6 +21,8 @@ with open('README.md') as f:
 
 class InstallCommand(install):
     def run(self):
+        os.system('make')
+
         common_dir = 'stclassify/svc_impl'
         libpostfix = '.dll' if os.name == 'nt' else '.so.1'
         #cp = 'copy' if os.name == 'nt' else 'cp'
@@ -43,7 +45,7 @@ class MakeAndInstallCommand(InstallCommand):
 
 setuptools.setup(
     name="stclassify",
-    version="0.1.0.20",
+    version="0.1.0.21",
     author="wac",
     author_email="wuanch@gmail.com",
     description="short_text_classify",
