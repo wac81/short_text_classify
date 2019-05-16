@@ -79,6 +79,7 @@ class GroceryTextPreProcessor(object):
     def _default_tokenize(text):
         return jieba.cut(text.strip(), cut_all=False)
 
+
     @staticmethod
     def _default_get_keyword(text, topK=10):
         return jieba.analyse.extract_tags(text, topK)
