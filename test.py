@@ -4,7 +4,6 @@
 from stclassify.classifier import *
 
 from stclassify.text_process import *
-
 # from bert_serving.client import BertClient
 
 custom_tokenize = None
@@ -18,24 +17,64 @@ name = 'test_model'
 #     ('sports', '四川丹棱举行全国长距登山挑战赛 近万人参与')
 # ]
 dir = './data'
-train_src = os.path.join(dir, 'train_src')
-test_src = os.path.join(dir, 'test_src')
+
+# train_src = os.path.join(dir, 'train_amber')
+# test_src = os.path.join(dir, 'test_amber')
+
+train_src = os.path.join(dir, 'train_chs')
+test_src = os.path.join(dir, 'test_chs')
 
 
-# train_src = os.path.join(dir, 'train_chs')
-# test_src = os.path.join(dir, 'test_chs')
+# train_src = os.path.join(dir, 'train_src')
+# test_src = os.path.join(dir, 'test_src')
+
+
+
+'''
+data expansion
+'''
+from textde.data_expansion import data_expansion
+lines = []
+with open(train_src, mode='r') as file:
+    lines_train = file.readlines()
+
+with open(test_src, mode='r') as file:
+    lines_test = file.readlines()
+
+train_src = train_src + '_exp'
+test_src = test_src + '_exp'
+
+with open(train_src, mode='w') as file:
+    for line in lines_train:
+        line = line.split('\t')
+        # file.write(line[0] + '\t' + line[1].strip() + '\n')
+        for sent in data_expansion(line[1].strip(), num_aug=2):
+            file.write(line[0] + '\t' + sent + '\n')
+
+with open(test_src, mode='w') as file:
+    for line in lines_test:
+        line = line.split('\t')
+        # file.write(line[0] + '\t' + line[1].strip() + '\n')
+        for sent in data_expansion(line[1].strip(), num_aug=2):
+            file.write(line[0] + '\t' + sent + '\n')
+
+
+
+
 
 text_converter = GroceryTextConverter(custom_tokenize=custom_tokenize)
 train_svm_file = '%s_train.svm' % name
 #
 #
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
-text_converter.set_text_parameters(
-                                    keywords_mode=False,
-                                    POS_mode=False,
-                                    extend_new_text=False,
-                                    ngram_extend_mode=True
-)
+# text_converter.set_text_parameters(
+#                                     keywords_mode=False,
+#                                     # POS_mode=True,
+#                                     # extend_new_text=True,
+#                                     ngram_extend_mode=False
+#                                     )
+
+
 text_converter.convert_text(train_src, output=train_svm_file, delimiter='\t')
 
 

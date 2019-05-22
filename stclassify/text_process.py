@@ -45,6 +45,7 @@ def del_punc(t):
     # t = t.replace('?', '')
     # t = t.replace('!', '')
     # return t
+
     temp = ''
     for word, pos in psg.cut(t.strip()):
         if pos[0] != 'x':  #去除标点
@@ -54,40 +55,34 @@ def del_punc(t):
 
 
 class GroceryTextPreProcessor(object):
-    def __init__(self,
-                 # stopwords_mode=False,
-                 # keywords_mode=True,#keywords default True
-                 # POS_mode=True,
-                 # bert_mode=False,
-                 # ngram_extend_mode=True
-                 ):
 
+    '''
+    参数设置
+    '''
+    POS_mode = False
+
+    def __init__(self):
         # index must start from 1
         self.tok2idx = {'>>dummy<<': 0}
         self.idx2tok = None
         self.stopwords_mode = False
-
-        self.keywords_mode = False
-        self.POS_mode = True
-        self.bert_mode = False
-        self.ngram_extend_mode = False
 
         if self.stopwords_mode:
             jieba.analyse.set_stop_words('stopwords.txt')
 
     @staticmethod
     def _default_tokenize(text):
-        return jieba.cut(text.strip(), cut_all=False)
+        return jieba.cut(text, cut_all=False)
+        # return jieba.cut_for_search(text)
 
 
     @staticmethod
-    def _default_get_keyword(text, topK=10):
+    def _default_get_keyword(text, topK=5):
         return jieba.analyse.extract_tags(text, topK)
 
     @staticmethod
     def _default_POS(text):
-        return psg.cut(text.strip())
-
+        return psg.cut(text)
 
     def preprocess(self, text, custom_tokenize):
         # text = del_punc(text)  # 去除标点，和停用词区分开
@@ -96,13 +91,14 @@ class GroceryTextPreProcessor(object):
             tokens = custom_tokenize(text)
         else:
             if self.POS_mode:
-                cutall = self._default_tokenize(text)
+                cutall = list(self._default_tokenize(text))
                 tokens = self._default_POS(text)
+                temp = []
                 for word, pos in tokens:
-                    if word in list(cutall):
-                        tokens.append(word + pos[0])
+                    # if word in cutall:
+                    temp.append(word + pos[0])
                     # tokens = [word + pos[0] if word in list(cutall) for word, pos in tokens]  #ex: '去v'
-                # tokens += [word for word, pos in tokens]
+                tokens = temp
             else:
                 tokens = self._default_tokenize(text)
 
@@ -220,7 +216,11 @@ class GroceryTextConverter(object):
         self.feat_gen = GroceryFeatureGenerator()
         self.class_map = GroceryClassMapping()
         self.custom_tokenize = custom_tokenize
+
         self.extend_new_text = False
+        self.bert_mode = False
+        self.keywords_mode = False
+        self.ngram_extend_mode = False
 
     def get_class_idx(self, class_name):
         return self.class_map.to_idx(class_name)
@@ -233,16 +233,16 @@ class GroceryTextConverter(object):
 
         return vec
     def to_svm(self, text, class_name=None):
-        feat = self.feat_gen.unigram(self.text_prep.preprocess(text, self.custom_tokenize))
+        feat = self.feat_gen.unigram(self.text_prep.preprocess(text.strip(), self.custom_tokenize))
         feat_copy = deepcopy(feat)
 
-        if self.text_prep.POS_mode:
+        if GroceryTextPreProcessor.POS_mode:
             tokens = [t[:-1] for t in self.text_prep.tok2idx.keys()]
         else:
             tokens = self.text_prep.tok2idx.keys()
 
         offset_len = 0
-        if self.text_prep.bert_mode:
+        if self.bert_mode:
             offset_len += 20000
 
             #bert
@@ -281,13 +281,19 @@ class GroceryTextConverter(object):
                         pass
 
         feat_plus = {}
-        if self.text_prep.keywords_mode:
+        if self.keywords_mode:
             offset_len += 20000
 
             keywords = self.text_prep._default_get_keyword(text)
             for k in keywords:
                 for t in self.text_prep.tok2idx.keys():
-                    if k in t:
+                    temp = None
+                    if GroceryTextPreProcessor.POS_mode:
+                        temp = t[:-1]
+                    else:
+                        temp = t
+
+                    if k == temp:
                         idx = self.text_prep.tok2idx[t]
                         # if (feat[idx]==0):
                         #     print(t)
@@ -296,7 +302,7 @@ class GroceryTextConverter(object):
                         # print(feat[idx])
                         break
 
-        if self.text_prep.ngram_extend_mode:
+        if self.ngram_extend_mode:
 
 
             # 加入词顺序这种方式不行
@@ -309,7 +315,10 @@ class GroceryTextConverter(object):
             #加入词的log信息(复制)
             offset_len += 20000
             for idx in list(feat_copy.keys()):
-                feat[idx+offset_len] = np.log(feat_copy[idx])
+                if feat_copy[idx] == 0:
+                    feat[idx + offset_len] = -1
+                else:
+                    feat[idx+offset_len] = np.log(feat_copy[idx])
 
 
             # #加入词频率/句子中字数
@@ -325,15 +334,15 @@ class GroceryTextConverter(object):
         return feat, self.class_map.to_idx(class_name)
 
     def set_text_parameters(self,
-                                keywords_mode=True,  # keywords default True
-                                POS_mode=True,
+                                keywords_mode=False,  # keywords default True
+                                POS_mode=False,
                                 bert_mode=False,
-                                ngram_extend_mode=True,
-                                extend_new_text=True):
-        self.text_prep.keywords_mode = keywords_mode
-        self.text_prep.POS_mode = POS_mode
-        self.text_prep.bert_mode = bert_mode
-        self.text_prep.ngram_extend_mode = ngram_extend_mode
+                                ngram_extend_mode=False,
+                                extend_new_text=False):
+        self.keywords_mode = keywords_mode
+        GroceryTextPreProcessor.POS_mode = POS_mode
+        self.bert_mode = bert_mode
+        self.ngram_extend_mode = ngram_extend_mode
         self.extend_new_text = extend_new_text
 
     def convert_text(self, text_src, delimiter, output=None):
