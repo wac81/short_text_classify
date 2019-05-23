@@ -2,7 +2,8 @@ import json
 
 import requests
 import os
-
+import time
+import random
 # 翻译函数，word 需要翻译的内容
 def translate(word):
     # 有道词典 api
@@ -44,32 +45,49 @@ def read_text_src(text_src, delimiter):
     return text_src
 
 
-def main():
+def main(file_path, batch_num=100):
     # print("本程序调用有道词典的API进行翻译，可达到以下效果：")
     # print("外文-->中文")
     # print("中文-->英文")
     # word = input('请输入你想要翻译的词或句：')
     dir = './data'
 
-    train_src = os.path.join(dir, 'train_src')
+    train_src = os.path.join(dir, file_path)
     texts = read_text_src(train_src, delimiter='\t')
-    with open(train_src+'_modify', 'w') as f:
-        for t in texts:
-            text = t[1].strip()
-            f.write(t[0] + '\t' + t[1].strip() + '\n')
+    with open(train_src+'_youdao', 'w') as f:
+        for i in range(0, len(texts), batch_num):  #批量翻译
+            text = texts[i:i+batch_num]
+            text_batch = ''
+            text_tag = []
+            for t in text:
+                f.write(t[0] + '\t' + t[1].strip() + '\n')
+                # if t[0] != 'neu':
+                #     continue
+                text_batch += t[1]
+                text_tag.append(t[0])
             print(text)
-            list_trans = translate(text)
-            if list_trans != None:
-                english = get_reuslt(list_trans)
-                chinese_trans = translate(english)
-                if chinese_trans != None:
-                    chinese = get_reuslt(chinese_trans)
-                    print(chinese)
-                    f.write(t[0] + '\t' + chinese + '\n')
 
+            if text_batch == '':
+                continue
+            #批量翻译
+            #先翻译成英文
+            list_trans = translate(text_batch)
+            if list_trans is not None:
+                text_batch = ''
+                for t in json.loads(list_trans)['translateResult']:
+                    text_batch += t[0]['tgt'] + '\n'
 
+                #英文--》中文
+                chinese_trans = translate(text_batch.strip('\n'))
+                if chinese_trans is not None:
+                    for i, t in enumerate(json.loads(chinese_trans)['translateResult']):
+                        print(t[0]['tgt'])
+                        if t[0]['tgt'] is None:
+                            continue
+                        f.write(text_tag[i] + '\t' + t[0]['tgt'] + '\n')
 
+            time.sleep(random.random() * 3)
 
 
 if __name__ == '__main__':
-    main()
+    main('insurannce_train', batch_num=50)
