@@ -5,6 +5,15 @@ import os
 import time
 import random
 # 翻译函数，word 需要翻译的内容
+
+
+# from googletrans import Translator
+#
+# translate = Translator()
+# result = translate.translate('你好')
+# print(result.text)
+
+
 def translate(word):
     # 有道词典 api
     url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule&smartresult=ugc&sessionFrom=null'
@@ -72,7 +81,7 @@ def main(file_path, batch_num=100):
             #批量翻译
             #先翻译成英文
             list_trans = translate(text_batch)
-            if list_trans is not None:
+            if list_trans is not None and json.loads(list_trans)['errorCode'] == 0:
                 text_batch = ''
                 for t in json.loads(list_trans)['translateResult']:
                     text_batch += t[0]['tgt'] + '\n'
@@ -80,14 +89,17 @@ def main(file_path, batch_num=100):
                 #英文--》中文
                 chinese_trans = translate(text_batch.strip('\n'))
                 if chinese_trans is not None:
-                    for i, t in enumerate(json.loads(chinese_trans)['translateResult']):
-                        print(t[0]['tgt'])
-                        if t[0]['tgt'] is None:
-                            continue
-                        f.write(text_tag[i] + '\t' + t[0]['tgt'] + '\n')
+                    ct = json.loads(chinese_trans)
+                    if 'translateResult' in ct.keys():
+                        for i, t in enumerate(json.loads(chinese_trans)['translateResult']):
+                            print(t[0]['tgt'])
+                            if t[0]['tgt'] is None:
+                                continue
+                            f.write(text_tag[i] + '\t' + t[0]['tgt'] + '\n')
+            else:
+                return False
 
-            time.sleep(random.random() * 3)
-
+            time.sleep(random.random() * 5)
 
 if __name__ == '__main__':
-    main('insurannce_train', batch_num=50)
+    main('insurannce_train', batch_num=20)

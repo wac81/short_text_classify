@@ -6,6 +6,9 @@ from stclassify.classifier import *
 from stclassify.text_process import *
 # from bert_serving.client import BertClient
 
+
+
+
 custom_tokenize = None
 train_svm_file = None
 delimiter='\t'
@@ -18,10 +21,13 @@ name = 'test_model'
 # ]
 dir = './data'
 
-train_src = os.path.join(dir, 'train_amber_youdao')
-test_src = os.path.join(dir, 'test_amber')
+# train_src = os.path.join(dir, 'train_amber')
+# test_src = os.path.join(dir, 'test_amber')
 
-# train_src = os.path.join(dir, 'train_chs_youdao')
+train_src = os.path.join(dir, 'insurance_train')
+test_src = os.path.join(dir, 'insurance_test')
+
+# train_src = os.path.join(dir, 'train_chs')
 # test_src = os.path.join(dir, 'test_chs')
 
 
@@ -69,9 +75,9 @@ train_svm_file = '%s_train.svm' % name
 # text_converter.convert_text(train_src, output=train_svm_file, delimiter='    ')
 text_converter.set_text_parameters(
                                     # keywords_mode=True,
-                                    # POS_mode=True,
+                                    POS_mode=True,
                                     # extend_new_text=True,
-                                    ngram_extend_mode=True
+                                    # ngram_extend_mode=True
                                     )
 
 
