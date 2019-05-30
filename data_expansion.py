@@ -1,11 +1,11 @@
-
 import synonyms
-# synonyms.nearby("人脸")
 import jieba
 import random
+import os,sys
+curdir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(curdir)
 
-
-stopwords_path = './data/stopwords.txt'
+stopwords_path = os.path.join(curdir, './data/stopwords.txt')
 
 
 stopwords = open(stopwords_path, mode='r').readlines()
@@ -150,7 +150,18 @@ def add_word(new_words):
 # main data augmentation function
 ########################################################################
 
-def data_expansion(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9):
+def data_expansion(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.2, num_aug=9):
+    '''
+    if you set alpha_ri and alpha_rs is 0 that means use linear classifier for it, and insensitive to word location
+
+    :param sentence: input sentence text
+    :param alpha_sr: Replace synonym control param. bigger means more words are Replace
+    :param alpha_ri: Random insert. bigger means more words are Insert
+    :param alpha_rs: Random swap. bigger means more words are swap
+    :param p_rd: Random delete. bigger means more words are deleted
+    :param num_aug: How many times do you repeat each method
+    :return:
+    '''
     # sentence = get_only_chars(sentence)
     # words = sentence.split(' ')
     words = jieba.lcut(sentence, cut_all=False)
@@ -161,23 +172,23 @@ def data_expansion(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1,
     if num_words > 0:
         num_new_per_technique = int(num_aug / 4) + 1
         n_sr = max(1, round(alpha_sr * num_words))
-        n_ri = max(1, round(alpha_ri * num_words))
-        n_rs = max(1, round(alpha_rs * num_words))
+        n_ri = max(0, round(alpha_ri * num_words))
+        n_rs = max(0, round(alpha_rs * num_words))
 
         # sr
         for _ in range(num_new_per_technique):
             a_words = replace_synonym(words, n_sr)
             augmented_sentences.append(''.join(a_words))
 
-        # # ri
-        # for _ in range(num_new_per_technique):
-        #     a_words = random_insertion(words, n_ri)
-        #     augmented_sentences.append(''.join(a_words))
+        # ri
+        for _ in range(num_new_per_technique):
+            a_words = random_insertion(words, n_ri)
+            augmented_sentences.append(''.join(a_words))
 
-        # # rs
-        # for _ in range(num_new_per_technique):
-        #     a_words = random_swap(words, n_rs)
-        #     augmented_sentences.append(''.join(a_words))
+        # rs
+        for _ in range(num_new_per_technique):
+            a_words = random_swap(words, n_rs)
+            augmented_sentences.append(''.join(a_words))
 
         # rd
         for _ in range(num_new_per_technique):
@@ -202,5 +213,5 @@ def data_expansion(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1,
 
 
 if __name__ == '__main__':
-    random_insertion(jieba.lcut('如果你要一起去，哪有什么用呢？'),1)
-    print(data_expansion('生活里的惬意，无需等到春暖花开'))
+    # random_insertion(jieba.lcut('如果你要一起去，哪有什么用呢？'),1)
+    print(data_expansion('生活里的惬意，无需等到春暖花开', alpha_ri=0, alpha_rs=0))

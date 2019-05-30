@@ -4,17 +4,16 @@ import requests
 import os
 import time
 import random
-# 翻译函数，word 需要翻译的内容
 
 
-# from googletrans import Translator
-#
-# translate = Translator()
-# result = translate.translate('你好')
-# print(result.text)
-
+print('WARNING: you need know, I would do my best for this translate web working, but it was allowed only 1000 times one hour.')
 
 def translate(word):
+    '''
+    request youdao web
+    :param word:
+    :return:
+    '''
     # 有道词典 api
     url = 'http://fanyi.youdao.com/translate?smartresult=dict&smartresult=rule&smartresult=ugc&sessionFrom=null'
     # 传输的参数，其中 i 为需要翻译的内容
@@ -35,7 +34,7 @@ def translate(word):
         # 然后相应的结果
         return response.text
     else:
-        print("有道词典调用失败")
+        print("youdao web request failed!")
         # 相应失败就返回空
         return None
 
@@ -53,17 +52,18 @@ def read_text_src(text_src, delimiter):
         raise TypeError('text_src should be list or str')
     return text_src
 
+def translate_batch(file_path, batch_num=30, reWrite=True, suffix='_youdao'):
+    '''
 
-def main(file_path, batch_num=100):
-    # print("本程序调用有道词典的API进行翻译，可达到以下效果：")
-    # print("外文-->中文")
-    # print("中文-->英文")
-    # word = input('请输入你想要翻译的词或句：')
-    dir = './data'
+    :param file_path: src file path
+    :param batch_num: default 30
+    :param reWrite: default True. means you can rewrite file , False means you can append data after this file.
+    :param suffix: new file suffix
+    :return:
+    '''
 
-    train_src = os.path.join(dir, file_path)
-    texts = read_text_src(train_src, delimiter='\t')
-    with open(train_src+'_youdao', 'w') as f:
+    texts = read_text_src(file_path, delimiter='\t')
+    with open(file_path + suffix, 'w' if reWrite else 'a') as f:
         for i in range(0, len(texts), batch_num):  #批量翻译
             text = texts[i:i+batch_num]
             text_batch = ''
@@ -97,9 +97,14 @@ def main(file_path, batch_num=100):
                                 continue
                             f.write(text_tag[i] + '\t' + t[0]['tgt'] + '\n')
             else:
-                return False
+                print('error: requests many times')
+                continue
 
-            time.sleep(random.random() * 5)
+            # time.sleep(random.random() * 5)
+            time.sleep(3)   #一小时允许1000次，每秒允许0.27次，间隔睡眠时间定在3秒
 
 if __name__ == '__main__':
-    main('insurannce_train', batch_num=20)
+
+    dir = './data'
+
+    translate_batch(os.path.join(dir, 'insurance_train'), batch_num=30)
