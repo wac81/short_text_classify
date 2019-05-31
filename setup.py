@@ -22,7 +22,9 @@ with open('README.md') as f:
 class InstallCommand(install):
     def run(self):
         # os.system('make')
-
+        makecmd = 'nmake -f Makefile.win clean liball' if os.name == 'nt' else 'make'
+        print(os.name)
+        os.system(makecmd)
         common_dir = 'stclassify/svc_impl'
         libpostfix = '.dll' if os.name == 'nt' else '.so.1'
         #cp = 'copy' if os.name == 'nt' else 'cp'
@@ -37,11 +39,11 @@ class InstallCommand(install):
         #os.system('cp %s/liblinear.%s %s' % (common_dir, libpostfix, target_dir))
         install.run(self)
 
-class MakeAndInstallCommand(InstallCommand):
-    def run(self):
-        makecmd = 'nmake -f Makefile.win clean liball' if os.name == 'nt' else 'make'
-        os.system(makecmd)
-        InstallCommand.run(self)
+# class MakeAndInstallCommand(InstallCommand):
+#     def run(self):
+#         makecmd = 'nmake -f Makefile.win clean liball' if os.name == 'nt' else 'make'
+#         os.system(makecmd)
+#         InstallCommand.run(self)
 
 setuptools.setup(
     name="stclassify",
@@ -62,8 +64,8 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    # cmdclass={'install': InstallCommand}
-    cmdclass={'make_and_install': MakeAndInstallCommand}
+    cmdclass={'install': InstallCommand}
+    # cmdclass={'make_and_install': MakeAndInstallCommand}
 
     # cmdclass={'install': InstallCommand, 'make_and_install': MakeAndInstallCommand}
 )
